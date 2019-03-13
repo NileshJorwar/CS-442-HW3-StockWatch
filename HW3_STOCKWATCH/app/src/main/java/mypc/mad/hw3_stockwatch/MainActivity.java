@@ -28,7 +28,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = "MainActivity";
-    private List<Stock> stockArrayList = new ArrayList<>();
+    private final List<Stock> stockArrayList = new ArrayList<>();
     private HashMap<String, String> map = new HashMap<String, String>();
     private MainActivity mainActivity;
     private SwipeRefreshLayout swiper;
@@ -37,37 +37,84 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private RecyclerView recyclerView; // Layout's recyclerview
     private static final int ADD_CODE = 1;
     private static final int UPDATE_CODE = 2;
+    private boolean flag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        recyclerView = findViewById(R.id.recycler);
-        stocksAdapter = new StocksAdapter(stockArrayList, this);
-        recyclerView.setAdapter(stocksAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        swiper = findViewById(R.id.swiper);
-        swiper.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                Collections.shuffle(stockArrayList);
-                stocksAdapter.notifyDataSetChanged();
-                swiper.setRefreshing(false);
-                Toast.makeText(getApplicationContext(), "List shuffled!!!", Toast.LENGTH_SHORT);
-            }
-        });
-
-        databaseHandler = new DatabaseHandler(this);
-        new NameDownloader(this).execute();
+        if (isOnline() == true) {
+            recyclerView = findViewById(R.id.recycler);
+            new NameDownloader(this).execute();
+            stocksAdapter = new StocksAdapter(stockArrayList, this);
+            recyclerView.setAdapter(stocksAdapter);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            swiper = findViewById(R.id.swiper);
+            databaseHandler = new DatabaseHandler(this);
+            swiper.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    if (isOnline() == true)
+                        loadStocksFromDB();
+                    else {
+                        errorDialog("errorDialog: No Internet Connectivity!!", "No Internet Connection", "Stocks Cannot Be Updated Without A Network Connection");
+                        swiper.setRefreshing(false);
+                    }
+                }
+            });
+            getDataFromDB();
+        }
+        else
+            errorDialog("errorDialog: No Internet Connectivity!!", "No Internet Connection", "Stocks Cannot Be Updated Without A Network Connection");
     }
 
+    public void getDataFromDB() {
+        Log.d(TAG, "getDataFromDB: Loading stocks from DB on Startup");
+        ArrayList<String[]> list = databaseHandler.loadStocks();
+        if (isOnline() == false)
+            errorDialog("errorDialog: No Internet Connectivity!!", "No Internet Connection", "Stocks Cannot Be Updated Without A Network Connection");
+
+        else {
+            for (int j = 0; j < stockArrayList.size(); j++) {
+                stockArrayList.remove(j);
+                stocksAdapter.notifyDataSetChanged();
+            }
+            Log.d(TAG, "getDataFromDB: Loading Done" + list.size());
+            for (int j = 0; j < list.size(); j++) {
+                databaseHandler.deleteStock(list.get(j)[0]);
+            }
+            for (int i = 0; i < list.size(); i++) {
+                new StockDownloader(MainActivity.this).execute(list.get(i)[0].trim());
+            }
+        }
+    }
+
+    public void loadStocksFromDB() {
+        Log.d(TAG, "loadStocksFromDB: Loading stocks from DB on Startup");
+        ArrayList<String[]> list = databaseHandler.loadStocks();
+        if (isOnline() == false)
+            errorDialog("errorDialog: No Internet Connectivity!!", "No Internet Connection", "Stocks Cannot Be Updated Without A Network Connection");
+
+        else {
+            stockArrayList.clear();
+            stocksAdapter.notifyDataSetChanged();
+            Log.d(TAG, "loadStocksFromDB: Loading Done" + list.size());
+            for (int j = 0; j < list.size(); j++) {
+                databaseHandler.deleteStock(list.get(j)[0]);
+            }
+            for (int i = 0; i < list.size(); i++) {
+                new StockDownloader(MainActivity.this).execute(list.get(i)[0].trim());
+            }
+        }
+        swiper.setRefreshing(false);
+
+    }
+
+
     @Override
-    protected void onResume() {
-        ArrayList<Stock> list = databaseHandler.loadStocks();
-        stockArrayList.clear();
-        stockArrayList.addAll(list);
-        Log.d(TAG, "onResume: " + list);
-        super.onResume();
+    protected void onDestroy() {
+        databaseHandler.shutDown();
+        super.onDestroy();
     }
 
     @Override
@@ -138,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             errorDialog("errorDialog: symbol not found", "Symbol Not Found: " + stockSymbol.trim(), "Data for stock symbol");
 
         else if (selecArr.size() == 1) {
-            duplicateStockExists(0,selecArr);
+            duplicateStockExists(0, selecArr);
         } else if (selecArr.size() > 1) {
             Collections.sort(selecArr);
             CharSequence symChars[] = selecArr.toArray(new CharSequence[selecArr.size()]);
@@ -147,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             builder.setItems(symChars, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    duplicateStockExists(which,selecArr);
+                    duplicateStockExists(which, selecArr);
                 }
             });
             builder.setNegativeButton("NEVERMIND", new DialogInterface.OnClickListener() {
@@ -159,13 +206,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             dialog.show();
         }
     }
-    public void duplicateStockExists(int which,ArrayList<String> selecArr)
-    {
+
+    public void duplicateStockExists(int which, ArrayList<String> selecArr) {
         Stock stock;
-        ArrayList<String> symbolList=new ArrayList<>();
-        for(int index=0;index<stockArrayList.size();index++)
-        {
-            stock=stockArrayList.get(index);
+        ArrayList<String> symbolList = new ArrayList<>();
+        for (int index = 0; index < stockArrayList.size(); index++) {
+            stock = stockArrayList.get(index);
             symbolList.add(stock.getStock_symbol());
         }
         if (symbolList.contains(selecArr.get(which).split("-")[0].trim())) {
@@ -174,6 +220,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             new StockDownloader(MainActivity.this).execute(selecArr.get(which).split("-")[0].trim());
         }
     }
+
     public void warningDialog(String logStmt, String symbol) {
         Log.d(TAG, logStmt);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -198,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "onClick: MainActivity");
         int pos = recyclerView.getChildLayoutPosition(v);
         Stock stock = stockArrayList.get(pos);
-        Log.d(TAG, "opening marketwatch.com");
+        Log.d(TAG, "opening marketwatch.com for " + stock.getStock_symbol());
         String marketWatchUrl = "http://www.marketwatch.com/investing/stock/" + stock.getStock_symbol();
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(marketWatchUrl));
         startActivity(intent);
@@ -216,6 +263,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(DialogInterface dialog, int id) {
                 databaseHandler.deleteStock(stockArrayList.get(pos).getStock_symbol());
                 stockArrayList.remove(pos);
+                Collections.sort(stockArrayList);
                 stocksAdapter.notifyDataSetChanged();
             }
         });
@@ -238,8 +286,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void updateFinanceData(Stock stock) {
+        Log.d(TAG, "updateFinanceData: Stock Data for symbol:" + flag);
         stockArrayList.add(stock);
         databaseHandler.addStock(stock);
+        Collections.sort(stockArrayList);
         stocksAdapter.notifyDataSetChanged();
+
     }
 }

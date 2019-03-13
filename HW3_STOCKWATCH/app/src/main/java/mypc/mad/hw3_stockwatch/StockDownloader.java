@@ -72,15 +72,15 @@ public class StockDownloader extends AsyncTask<String, Void, String> {
             String l = jFinance.getString("latestPrice");
             double latestPrice = 0.0;
             if (l != null && !l.trim().isEmpty() && !l.trim().equals("null"))
-                latestPrice = Double.parseDouble(l);
+                latestPrice = Double.parseDouble(l.trim());
             String ch = jFinance.getString("change");
             double change = 0.0;
             if (ch != null && !ch.trim().isEmpty() && !ch.trim().equals("null"))
-                change = Double.parseDouble(ch);
+                change = Double.parseDouble(ch.trim());
             String chP = jFinance.getString("changePercent");
             double changePercent = 0.0;
             if (chP != null && !chP.trim().isEmpty() && !chP.trim().equals("null"))
-                changePercent = Double.parseDouble(chP);
+                changePercent = Double.parseDouble(chP.trim());
             Stock stock=new Stock(symbol, cName, latestPrice, change, changePercent);
             Log.d(TAG, "parseJSON: Stock Symbol and Company Name: " + symbol + ", " + cName);
 

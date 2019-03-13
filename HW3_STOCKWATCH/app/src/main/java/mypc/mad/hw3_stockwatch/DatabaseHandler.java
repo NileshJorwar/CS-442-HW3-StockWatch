@@ -56,10 +56,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         database.insert(TABLE_NAME,null,values);
         Log.d(TAG, "addStock: Add Complete");
     }
-    public ArrayList<Stock> loadStocks()
+    public ArrayList<String[]> loadStocks()
     {
         Log.d(TAG, "loadStocks: Loading Stocks from Database...");
-        ArrayList<Stock> stocks= new ArrayList<>();
+        ArrayList<String[]> stocks= new ArrayList<>();
         Cursor cursor = database.query(
                 TABLE_NAME,  // The table to query
                 new String[]{SYMBOL, COMPANY}, // The columns to return
@@ -74,8 +74,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             for (int i = 0; i < cursor.getCount(); i++) {
                 String symbol = cursor.getString(0);
                 String company = cursor.getString(1);
-                Stock c = new Stock(symbol, company, 0, 0, 0);
-                stocks.add(c);
+                stocks.add(new String[]{symbol, company});
                 cursor.moveToNext();
             }
             cursor.close();
@@ -88,5 +87,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Log.d(TAG, "deleteStock: "+stock_symbol);
         int numRows=database.delete(TABLE_NAME,SYMBOL+" =?",new String[]{stock_symbol});
         Log.d(TAG, "deleteStock: no of records deleted = "+numRows);
+    }
+
+    public void shutDown() {
+        database.close();
     }
 }

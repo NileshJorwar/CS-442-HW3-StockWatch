@@ -1,6 +1,7 @@
 package mypc.mad.hw3_stockwatch;
 
-public class Stock {
+public class Stock implements Comparable<Stock>
+{
     public String stock_symbol;
     public String company_name;
     public double price;
@@ -54,5 +55,10 @@ public class Stock {
 
     public void setChange_percentage(double change_percentage) {
         this.change_percentage = change_percentage;
+    }
+
+    @Override
+    public int compareTo(Stock o) {
+        return getStock_symbol().compareTo(o.getStock_symbol());
     }
 }

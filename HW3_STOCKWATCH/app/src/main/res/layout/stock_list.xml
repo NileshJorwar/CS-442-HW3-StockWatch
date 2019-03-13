@@ -7,12 +7,12 @@
 
     <TextView
         android:id="@+id/stockSymbolId"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
-        android:text="symbol"
-        android:textSize="18sp"
+        android:textSize="20sp"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -22,30 +22,32 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:text="Company"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/stockSymbolId"
         app:layout_constraintTop_toBottomOf="@+id/stockSymbolId" />
 
     <TextView
         android:id="@+id/priceId"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
+        android:layout_width="76dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="60dp"
         android:layout_marginTop="16dp"
         android:inputType="numberSigned|numberDecimal"
-        android:text="Price"
+        android:textSize="18sp"
         app:layout_constraintStart_toEndOf="@+id/stockSymbolId"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/priceChngId"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="100dp"
+        android:layout_height="23dp"
+        android:layout_marginStart="50dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="20dp"
         android:inputType="numberSigned|numberDecimal"
-        android:text="Price Change"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/changePerId"
         app:layout_constraintStart_toEndOf="@+id/priceId"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -53,13 +55,11 @@
         android:id="@+id/changePerId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:drawableLeft="@drawable/ic_play_arrow_black_24dp"
-        android:drawablePadding="5dp"
+        android:layout_marginEnd="16dp"
         android:inputType="numberSigned|numberDecimal"
-        android:text="chng perc"
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/priceChngId"
         app:layout_constraintTop_toTopOf="parent" />
