@@ -28,7 +28,7 @@
     <session id="1784895656">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="4" />
+          <entry key="project.closed" value="5" />
           <entry key="project.open.time.24" value="1" />
           <entry key="project.open.time.27" value="1" />
           <entry key="project.open.time.3" value="1" />
@@ -84,8 +84,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/mypc/mad/hw3_stockwatch/MainActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-88">
-              <caret line="53" column="30" selection-start-line="53" selection-start-column="16" selection-end-line="53" selection-end-column="30" />
+            <state relative-caret-position="252">
+              <caret line="76" column="25" selection-start-line="76" selection-start-column="25" selection-end-line="76" selection-end-column="25" />
               <folding>
                 <element signature="e#7274#7503#0" expanded="true" />
                 <element signature="e#7502#7503#0" expanded="true" />
@@ -263,7 +263,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Structure" order="0" side_tool="true" />
       <window_info id="Image Layers" order="1" />
@@ -438,8 +437,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/mypc/mad/hw3_stockwatch/MainActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-88">
-          <caret line="53" column="30" selection-start-line="53" selection-start-column="16" selection-end-line="53" selection-end-column="30" />
+        <state relative-caret-position="252">
+          <caret line="76" column="25" selection-start-line="76" selection-start-column="25" selection-end-line="76" selection-end-column="25" />
           <folding>
             <element signature="e#7274#7503#0" expanded="true" />
             <element signature="e#7502#7503#0" expanded="true" />
