@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         databaseHandler = new DatabaseHandler(this);
         if (isOnline())
             new NameDownloader(this).execute();
+        else
+            errorDialog("errorDialog: No Internet Connectivity!!", "No Internet Connection", "Stocks Cannot Be Updated Without A Network Connection");
         swiper.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -193,7 +195,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             builder.setItems(symChars, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    duplicateStockExists(which, selecArr);
+                    if (isOnline())
+                        duplicateStockExists(which, selecArr);
+                    else
+                        getDataFromDB();
                 }
             });
             builder.setNegativeButton("NEVERMIND", new DialogInterface.OnClickListener() {
@@ -208,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void duplicateStockExists(int which, ArrayList<String> selecArr) {
 
-        //Checking duplicateStocks
+        //Checking duplicate Stocks
         Stock stock;
         ArrayList<String> symbolList = new ArrayList<>();
         for (int index = 0; index < stockArrayList.size(); index++) {
@@ -229,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setIcon(R.drawable.ic_warning_black_24dp);
         builder.setTitle("Duplicate Stock");
-        builder.setMessage("Stock Symbol " + symbol + " is already displayed");
+        builder.setMessage("Stock Symbol '" + symbol + "' is already displayed");
         AlertDialog dialog = builder.create();
         dialog.show();
     }
