@@ -56,8 +56,6 @@ public class StocksAdapter extends RecyclerView.Adapter<StocksViewHolder> {
     }
     public void changeTextColor(String colorCode,Stock stock,StocksViewHolder stocksViewHolder)
     {
-
-        //mDrawable.setColorFilter(new PorterDuffColorFilter(0xFF0000,PorterDuff.Mode.SRC_IN));
         stocksViewHolder.stockSymbolView.setTextColor(Color.parseColor(colorCode));
         stocksViewHolder.companyNameView.setTextColor(Color.parseColor(colorCode));
         stocksViewHolder.priceView.setTextColor(Color.parseColor(colorCode));

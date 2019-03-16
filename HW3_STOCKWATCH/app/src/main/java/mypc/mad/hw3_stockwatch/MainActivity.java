@@ -43,69 +43,61 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (isOnline() == true) {
-            recyclerView = findViewById(R.id.recycler);
+        recyclerView = findViewById(R.id.recycler);
+        stocksAdapter = new StocksAdapter(stockArrayList, this);
+        recyclerView.setAdapter(stocksAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        swiper = findViewById(R.id.swiper);
+        databaseHandler = new DatabaseHandler(this);
+        if (isOnline() == true)
             new NameDownloader(this).execute();
-            stocksAdapter = new StocksAdapter(stockArrayList, this);
-            recyclerView.setAdapter(stocksAdapter);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            swiper = findViewById(R.id.swiper);
-            databaseHandler = new DatabaseHandler(this);
-            swiper.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    if (isOnline() == true)
-                        loadStocksFromDB();
-                    else {
-                        errorDialog("errorDialog: No Internet Connectivity!!", "No Internet Connection", "Stocks Cannot Be Updated Without A Network Connection");
-                        swiper.setRefreshing(false);
-                    }
+        swiper.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (isOnline() == true)
+                    loadStocksFromDB();
+                else {
+                    errorDialog("errorDialog: No Internet Connectivity!!", "No Internet Connection", "Stocks Cannot Be Updated Without A Network Connection");
+                    swiper.setRefreshing(false);
                 }
-            });
-            getDataFromDB();
-        }
-        else
-            errorDialog("errorDialog: No Internet Connectivity!!", "No Internet Connection", "Stocks Cannot Be Updated Without A Network Connection");
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        getDataFromDB();
+        super.onResume();
     }
 
     public void getDataFromDB() {
         Log.d(TAG, "getDataFromDB: Loading stocks from DB on Startup");
         ArrayList<String[]> list = databaseHandler.loadStocks();
-        if (isOnline() == false)
-            errorDialog("errorDialog: No Internet Connectivity!!", "No Internet Connection", "Stocks Cannot Be Updated Without A Network Connection");
-
-        else {
-            for (int j = 0; j < stockArrayList.size(); j++) {
-                stockArrayList.remove(j);
-                stocksAdapter.notifyDataSetChanged();
-            }
-            Log.d(TAG, "getDataFromDB: Loading Done" + list.size());
-            for (int j = 0; j < list.size(); j++) {
-                databaseHandler.deleteStock(list.get(j)[0]);
-            }
-            for (int i = 0; i < list.size(); i++) {
-                new StockDownloader(MainActivity.this).execute(list.get(i)[0].trim());
-            }
+        stockArrayList.clear();
+        stocksAdapter.notifyDataSetChanged();
+        Log.d(TAG, "getDataFromDB: Loading Done" + list.size());
+        for (int j = 0; j < list.size(); j++) {
+            databaseHandler.deleteStock(list.get(j)[0]);
+        }
+        for (int i = 0; i < list.size(); i++) {
+            new StockDownloader(MainActivity.this).execute(list.get(i)[0].trim(), list.get(i)[1].trim());
         }
     }
+
 
     public void loadStocksFromDB() {
         Log.d(TAG, "loadStocksFromDB: Loading stocks from DB on Startup");
         ArrayList<String[]> list = databaseHandler.loadStocks();
-        if (isOnline() == false)
-            errorDialog("errorDialog: No Internet Connectivity!!", "No Internet Connection", "Stocks Cannot Be Updated Without A Network Connection");
-
-        else {
-            stockArrayList.clear();
-            stocksAdapter.notifyDataSetChanged();
-            Log.d(TAG, "loadStocksFromDB: Loading Done" + list.size());
-            for (int j = 0; j < list.size(); j++) {
-                databaseHandler.deleteStock(list.get(j)[0]);
-            }
-            for (int i = 0; i < list.size(); i++) {
-                new StockDownloader(MainActivity.this).execute(list.get(i)[0].trim());
-            }
+        stockArrayList.clear();
+        stocksAdapter.notifyDataSetChanged();
+        Log.d(TAG, "loadStocksFromDB: Loading Done" + list.size());
+        for (int j = 0; j < list.size(); j++) {
+            databaseHandler.deleteStock(list.get(j)[0]);
         }
+        for (int i = 0; i < list.size(); i++) {
+            new StockDownloader(MainActivity.this).execute(list.get(i)[0].trim());
+        }
+
         swiper.setRefreshing(false);
 
     }
@@ -127,10 +119,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.addStock:
-                if (isOnline() == false)
+                if (!isOnline())
                     errorDialog("errorDialog: No Internet Connectivity!!", "No Internet Connection", "Stocks Cannot Be Updated Without A Network Connection");
-                else
+                else {
+                    if (map.isEmpty())
+                        new NameDownloader(this).execute();
                     openDialog();
+                }
             default:
                 return super.onOptionsItemSelected(item);
         }

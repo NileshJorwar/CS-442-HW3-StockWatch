@@ -21,6 +21,7 @@ public class StockDownloader extends AsyncTask<String, Void, String> {
     private final java.lang.String financeUrlPart1 = "https://api.iextrading.com/1.0/stock/";
     private final java.lang.String financeUrlPart2 = "/quote?displayPercent=true";
     private static final java.lang.String TAG = "StockDownloader";
+    private ArrayList<String> offlineData = new ArrayList<>();
 
     public StockDownloader(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
@@ -28,6 +29,10 @@ public class StockDownloader extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... strings) {
+        if (strings.length == 2) {
+            offlineData.add(strings[0]);
+            offlineData.add(strings[1]);
+        }
         Uri dataUri = Uri.parse(financeUrlPart1 + strings[0] + financeUrlPart2);
         String urlToUse = dataUri.toString();
         Log.d(TAG, "doInBackground: " + urlToUse);
@@ -57,9 +62,15 @@ public class StockDownloader extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String s) {
-        if(s!=null) {
+        if (s != null) {
             Stock stock = parseJSON(s);
             mainActivity.updateFinanceData(stock);
+        } else {
+            if (offlineData.size() == 2) {
+                Stock stock;
+                stock = new Stock(offlineData.get(0), offlineData.get(1), 0, 0, 0);
+                mainActivity.updateFinanceData(stock);
+            }
         }
     }
 
@@ -81,7 +92,7 @@ public class StockDownloader extends AsyncTask<String, Void, String> {
             double changePercent = 0.0;
             if (chP != null && !chP.trim().isEmpty() && !chP.trim().equals("null"))
                 changePercent = Double.parseDouble(chP.trim());
-            Stock stock=new Stock(symbol, cName, latestPrice, change, changePercent);
+            Stock stock = new Stock(symbol, cName, latestPrice, change, changePercent);
             Log.d(TAG, "parseJSON: Stock Symbol and Company Name: " + symbol + ", " + cName);
 
             return stock;
