@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int ADD_CODE = 1;
     private static final int UPDATE_CODE = 2;
     private boolean flag = false;
+    private final ArrayList<String[]> arrList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         swiper = findViewById(R.id.swiper);
         databaseHandler = new DatabaseHandler(this);
-        if (isOnline() == true)
+        if (isOnline())
             new NameDownloader(this).execute();
         swiper.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -66,13 +67,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onResume() {
-        getDataFromDB();
+        if (arrList.isEmpty()) {
+            getDataFromDB();
+        } else if (isOnline()) {
+            loadStocksFromDB();
+        }
         super.onResume();
     }
 
     public void getDataFromDB() {
-        Log.d(TAG, "getDataFromDB: Loading stocks from DB on Startup");
         ArrayList<String[]> list = databaseHandler.loadStocks();
+        arrList.clear();
+        arrList.addAll(list);
         stockArrayList.clear();
         stocksAdapter.notifyDataSetChanged();
         Log.d(TAG, "getDataFromDB: Loading Done" + list.size());
@@ -97,9 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (int i = 0; i < list.size(); i++) {
             new StockDownloader(MainActivity.this).execute(list.get(i)[0].trim());
         }
-
         swiper.setRefreshing(false);
-
     }
 
 
@@ -203,6 +207,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void duplicateStockExists(int which, ArrayList<String> selecArr) {
+
+        //Checking duplicateStocks
         Stock stock;
         ArrayList<String> symbolList = new ArrayList<>();
         for (int index = 0; index < stockArrayList.size(); index++) {
@@ -213,6 +219,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             warningDialog("warningDialog: duplicate stock", selecArr.get(which).split("-")[0].trim());
         } else {
             new StockDownloader(MainActivity.this).execute(selecArr.get(which).split("-")[0].trim());
+            //Refreshing the stocks while adding new one
+            loadStocksFromDB();
         }
     }
 
@@ -277,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         map.putAll(sMap);
         Log.d(TAG, "updateData: Stock Data: " + map.size());
         if (map != null)
-            Toast.makeText(this, "Loaded " + map.size() + " stock symbols.", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "updateData: Loaded " + map.size() + " stock symbols.");
     }
 
     public void updateFinanceData(Stock stock) {
