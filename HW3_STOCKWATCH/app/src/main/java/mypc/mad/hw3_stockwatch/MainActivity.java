@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final ArrayList<String> selecArr = new ArrayList<>();
 
         for (String key : map.keySet()) {
-            if (key.contains(stockSymbol.trim())) {
+            if (key.substring(0,Math.min(stockSymbol.length(),key.length())).equals(stockSymbol)) {
                 selecArr.add(key + " - " + map.get(key));
             }
         }
